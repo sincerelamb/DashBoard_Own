@@ -1,15 +1,16 @@
 package melloyy.mylibrary;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Path;
-import android.graphics.RadialGradient;
-import android.graphics.Rect;
 import android.graphics.RectF;
-import android.graphics.Shader;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
@@ -27,7 +28,7 @@ public class CustomDashBoardView extends View {
      */
     private String mtitleText;     //中间数值上方
     private String mtitleNumText;  //中间数值
-    private String mbottomNumText; //下方数值整个字符串
+    private String mbottomText; //下方数值整个字符串
     /**
      * 文本的颜色
      */
@@ -48,6 +49,7 @@ public class CustomDashBoardView extends View {
      * 外圈背景色
      */
     private int moutsideBackGroundColor;
+    private int moutsideForeGroundColor;
     /**
      * 透明度
      */
@@ -57,42 +59,33 @@ public class CustomDashBoardView extends View {
      * 最小值最大值是对应view中的坐标值
      */
     private int mMin = 0; // 最小值
-    private int mMax = 950; // 最大值
+    private int mMax = 1; // 最大值
     private int mAddAllValue = mMax;  // 总值
-    private int mCurrentValue; // 占值
+    private int mCurrentValue = mAddAllValue; //  占值
+    private int mAnimValue = mCurrentValue;    //  动画值
     /**
      * 角度可以设置
      */
-    private int mAngle = 0;
+    private int mAngle = 60;
 
 
     /**
      * 标识↓
      */
-    private int mRadius; // 画布边缘半径（去除padding后的半径）
     private int mStartAngle = 150; // 起始角度
     private int mSweepAngle = 240; // 绘制角度
     private int mSection = 10; // 值域（mMax-mMin）等分份数
     private int mPortion = 3; // 一个mSection等分份数
-    private String mHeaderText = "BETA"; // 表头
-    private int mCreditValue = 650; // 信用分
-    private int mSolidCreditValue = mCreditValue; // 信用分(设定后不变)
-    private int mSparkleWidth; // 亮点宽度
-    private int mProgressWidth; // 进度圆弧宽度
+    //    private int mCreditValue = 650; // 信用分
+//    private int mCurrentValue = mCreditValue; // 信用分(设定后不变)
     private float mLength1; // 刻度顶部相对边缘的长度
     private int mCalibrationWidth; // 刻度圆弧宽度
-    private float mLength2; // 刻度读数顶部相对边缘的长度
 
     private int mPadding;
     private float mCenterX, mCenterY; // 圆心坐标
     private Paint mPaint;
-    private RectF mRectFProgressArc;
     private RectF mRectFCalibrationFArc;
-    private RectF mRectFTextArc;
-    private Path mPath;
-    private Rect mRectText;
     private int mBackgroundColor;
-    private int[] mBgColors;
     /**
      * 由于界面值不是线性排布，所以播放动画时若以值为参考，则会出现忽慢忽快
      * 的情况（开始以为是卡顿）。因此，先计算出最终到达角度，以扫过的角度为线性参考，动画就流畅了
@@ -118,56 +111,313 @@ public class CustomDashBoardView extends View {
         int n = a.getIndexCount();
         for (int i = 0; i < n; i++) {
             int attr = a.getIndex(i);
-            if (attr == R.styleable.CustomDashBoardView_titleText){
+            if (attr == R.styleable.CustomDashBoardView_titleText) {
                 mtitleText = a.getString(attr);
-            }else if(attr == R.styleable.CustomDashBoardView_titleTextColor){
+            } else if (attr == R.styleable.CustomDashBoardView_titleTextColor) {
                 // 默认颜色设置为黑色
-                mtitleTextColor = a.getColor(attr, Color.BLUE);
-            }else if(attr == R.styleable.CustomDashBoardView_titleTextSize){
+                mtitleTextColor = a.getColor(attr, Color.WHITE);
+            } else if (attr == R.styleable.CustomDashBoardView_titleTextSize) {
 // 默认设置为16sp，TypeValue也可以把sp转化为px
                 mtitleTextSize = a.getDimensionPixelSize(attr, (int) TypedValue.applyDimension(
                         TypedValue.COMPLEX_UNIT_SP, 16, getResources().getDisplayMetrics()));
-            }else if(attr == R.styleable.CustomDashBoardView_titleNumText){
-                mtitleText = a.getString(attr);
-            }else if(attr == R.styleable.CustomDashBoardView_titleNumTextColor){
-                mtitleTextColor = a.getColor(attr, Color.BLUE);
-            }else if(attr == R.styleable.CustomDashBoardView_titleNumTextSize){
-                mtitleTextSize = a.getDimensionPixelSize(attr, (int) TypedValue.applyDimension(
+            } else if (attr == R.styleable.CustomDashBoardView_titleNumText) {
+                mtitleNumText = a.getString(attr);
+            } else if (attr == R.styleable.CustomDashBoardView_titleNumTextColor) {
+                mtitleNumTextColor = a.getColor(attr, Color.WHITE);
+            } else if (attr == R.styleable.CustomDashBoardView_titleNumTextSize) {
+                mtitleNumTextSize = a.getDimensionPixelSize(attr, (int) TypedValue.applyDimension(
                         TypedValue.COMPLEX_UNIT_SP, 16, getResources().getDisplayMetrics()));
-            }else if(attr == R.styleable.CustomDashBoardView_bottomNumText){
-                mtitleText = a.getString(attr);
-            }else if(attr == R.styleable.CustomDashBoardView_bottomTextColor){
-                mtitleTextColor = a.getColor(attr, Color.BLUE);
-            }else if(attr == R.styleable.CustomDashBoardView_bottomTextSize){
-                mtitleTextSize = a.getDimensionPixelSize(attr, (int) TypedValue.applyDimension(
+            } else if (attr == R.styleable.CustomDashBoardView_bottomNumText) {
+                mbottomText = a.getString(attr);
+            } else if (attr == R.styleable.CustomDashBoardView_bottomTextColor) {
+                mbottomTextColor = a.getColor(attr, Color.WHITE);
+            } else if (attr == R.styleable.CustomDashBoardView_bottomTextSize) {
+                mbottomTextSize = a.getDimensionPixelSize(attr, (int) TypedValue.applyDimension(
                         TypedValue.COMPLEX_UNIT_SP, 16, getResources().getDisplayMetrics()));
-            }else if(attr == R.styleable.CustomDashBoardView_insideBackGroundColor){
-                minsideBackGroundColor = a.getColor(attr, Color.GRAY);
-            }else if(attr == R.styleable.CustomDashBoardView_cycleBackGroundColor){
-                moutsideBackGroundColor = a.getColor(attr,Color.WHITE);
+            } else if (attr == R.styleable.CustomDashBoardView_insideBackGroundColor) {
+                minsideBackGroundColor = a.getColor(attr, Color.BLACK);
+            } else if (attr == R.styleable.CustomDashBoardView_cycleBackGroundColor) {
+                moutsideBackGroundColor = a.getColor(attr, Color.WHITE);
             }
         }
         a.recycle();
+        init();
     }
 
     private void init() {
-        mProgressWidth = dp2px(3);     // 进度圆弧宽度
-        mCalibrationWidth = dp2px(10); // 刻度圆弧宽度
 
-        mPaint = new Paint();          //初始化画笔
+        mStartAngle = 90 + (mAngle / 2);
+        mSweepAngle = 360 - mAngle;
+
+        mCalibrationWidth = dp2px(10);
+
+        mPaint = new Paint();
         mPaint.setAntiAlias(true);
         mPaint.setStrokeCap(Paint.Cap.ROUND);
 
-        mRectFProgressArc = new RectF();
         mRectFCalibrationFArc = new RectF();
-        mRectFTextArc = new RectF();
-        mPath = new Path();
-        mRectText = new Rect();
-
         mBackgroundColor = ContextCompat.getColor(getContext(), R.color.customdashboardview_black);
-
-
     }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+
+        mPadding = Math.max(
+                Math.max(getPaddingLeft(), getPaddingTop()),
+                Math.max(getPaddingRight(), getPaddingBottom())
+        );
+        setPadding(mPadding, mPadding, mPadding, mPadding);
+
+        mLength1 = mPadding + dp2px(10) / 2f + dp2px(8);                //刻度圆弧外一圈
+
+        int width = resolveSize(dp2px(220), widthMeasureSpec);
+
+        //设置长宽
+        setMeasuredDimension(width, width + dp2px(30));
+
+        mCenterX = mCenterY = getMeasuredWidth() / 2f;
+
+        mRectFCalibrationFArc.set(
+                mLength1 + mCalibrationWidth / 2f,
+                mLength1 + mCalibrationWidth / 2f,
+                getMeasuredWidth() - mLength1 - mCalibrationWidth / 2f,
+                getMeasuredWidth() - mLength1 - mCalibrationWidth / 2f
+        );
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+
+        canvas.drawColor(mBackgroundColor);
+
+        /**
+         *  初始化动画
+         */
+        mPaint.setShader(null);
+        mPaint.setStyle(Paint.Style.STROKE);
+        mPaint.setColor(moutsideForeGroundColor);//先设置颜色，再设置透明度
+        mPaint.setAlpha(80);
+        mPaint.setStrokeCap(Paint.Cap.SQUARE);
+        mPaint.setStrokeWidth(mCalibrationWidth);
+        if (isAnimFinish) {
+            /**
+             * 画进度圆弧(起始到信用值)
+             */
+            canvas.drawArc(mRectFCalibrationFArc, mStartAngle + 3,
+                    calculateRelativeAngleWithValue(mAnimValue), false, mPaint);
+        } else {
+            /**
+             * 画进度圆弧(起始到信用值)
+             */
+//            Log.d("angle0",(mStartAngle + 3)+","+(mAngleWhenAnim - (mStartAngle + 2.99f)));
+            canvas.drawArc(mRectFCalibrationFArc, mStartAngle + 3,
+                    mAngleWhenAnim - (mStartAngle + 2.99f), false, mPaint);
+        }
+
+        /**
+         * 画刻度圆弧
+         */
+        mPaint.setShader(null);
+        mPaint.setStyle(Paint.Style.STROKE);
+        mPaint.setColor(moutsideBackGroundColor);
+        mPaint.setAlpha(80);
+        mPaint.setStrokeCap(Paint.Cap.SQUARE);
+        mPaint.setStrokeWidth(mCalibrationWidth);
+        canvas.drawArc(mRectFCalibrationFArc, mStartAngle + 3, mSweepAngle - 6, false, mPaint);
+
+        /**
+         * 画短刻度
+         * 画好起始角度的一条刻度后通过canvas绕着原点旋转来画短刻度
+         */
+        mPaint.setStrokeWidth(dp2px(1));
+        mPaint.setAlpha(80);
+        float degree = mSweepAngle / mSection;
+        float x10 = mCenterX;
+        float y10 = mPadding + mLength1 - dp2px(1);
+        float x11 = mCenterX;
+        float y11 = y10 + mCalibrationWidth;
+        // 逆时针到开始处
+        canvas.save();
+        canvas.drawLine(x10, y10, x11, y11, mPaint);
+        for (int i = 0; i < mSection / 2; i++) {
+            canvas.rotate(-degree, mCenterX, mCenterY);
+            canvas.drawLine(x10, y10, x11, y11, mPaint);
+        }
+        canvas.restore();
+        // 顺时针到结尾处
+        canvas.save();
+        for (int i = 0; i < mSection / 2; i++) {
+            canvas.rotate(degree, mCenterX, mCenterY);
+            canvas.drawLine(x10, y10, x11, y11, mPaint);
+        }
+        canvas.restore();
+
+        /**
+         * 画长刻度
+         * 画好起始角度的一条刻度后通过canvas绕着原点旋转来画剩下的长刻度
+         */
+        mPaint.setStrokeCap(Paint.Cap.ROUND);
+        mPaint.setStrokeWidth(dp2px(2));
+        mPaint.setAlpha(120);
+        float x00 = mCenterX;
+        float y00 = mPadding + mLength1 - dp2px(5);
+        float x01 = mCenterX;
+        float y01 = y00 + mCalibrationWidth + dp2px(4);
+        // 逆时针到开始处
+        canvas.save();
+        int degree0 = mSweepAngle / (mSection * mPortion);
+        canvas.rotate(-degree0, mCenterX, mCenterY);//先旋转一点点
+        canvas.drawLine(x00, y00, x01, y01, mPaint);
+        for (int i = 0; i < (mSection / 2) - 1; i++) {
+            canvas.rotate(-degree, mCenterX, mCenterY);
+            canvas.drawLine(x00, y00, x01, y01, mPaint);
+        }
+        canvas.restore();
+        // 顺时针到结尾处
+        canvas.save();
+        canvas.rotate(degree0, mCenterX, mCenterY);//先旋转一点点
+        canvas.drawLine(x00, y00, x01, y01, mPaint);
+        for (int i = 0; i < (mSection / 2) - 1; i++) {
+            canvas.rotate(degree, mCenterX, mCenterY);
+            canvas.drawLine(x00, y00, x01, y01, mPaint);
+        }
+        canvas.restore();
+
+        /**
+         * 画背景
+         */
+        mPaint.setAntiAlias(false);                       //设置画笔为无锯齿
+        mPaint.setColor(minsideBackGroundColor);                    //设置画笔颜色
+        mPaint.setStrokeWidth((float) 3.0);              //线宽
+        mPaint.setStyle(Paint.Style.FILL);                   //空心效果
+        //半径为centerY-长线Y
+        canvas.drawCircle(mCenterX, mCenterY, mCenterY - (mPadding + mLength1 + mCalibrationWidth - dp2px(1)), mPaint);           //绘制圆形
+
+
+        /**
+         * 画实时度数值
+         */
+        mPaint.setTextAlign(Paint.Align.LEFT);
+        mPaint.setColor(mtitleNumTextColor);
+        mPaint.setStyle(Paint.Style.FILL);  //内部填满
+        mPaint.setAlpha(255);
+        mPaint.setTextSize(mtitleNumTextSize);
+        mPaint.setTextAlign(Paint.Align.CENTER);
+        mtitleNumText = String.valueOf(mCurrentValue);
+        canvas.drawText(mtitleNumText, mCenterX, mCenterY + dp2px(20), mPaint);
+
+        /**
+         * 画表头
+         */
+        mPaint.setAlpha(160);
+        mPaint.setColor(mtitleTextColor);
+        mPaint.setTextSize(sp2px(mtitleTextSize));
+        canvas.drawText(mtitleText, mCenterX, mCenterY - dp2px(20), mPaint);
+
+        /**
+         * 画数字下方
+         */
+        mPaint.setAlpha(160);
+        mPaint.setColor(mbottomTextColor);
+        mPaint.setTextSize(mbottomTextSize);
+        canvas.drawText(mbottomText, mCenterX, mCenterY + dp2px(70), mPaint);
+    }
+
+    /**
+     * 相对起始角度计算分值所对应的角度大小
+     */
+    private float calculateRelativeAngleWithValue(int value) {
+        float i = 0f;
+        float degreePerSection = 1f * mSweepAngle / mSection;
+        i = (value - mMin) * mSection * degreePerSection / (mMax - mMin);
+        if (i > 6) {
+            return i - 6;
+        } else {
+            return 0.01f;
+        }
+    }
+
+    /**
+     * 设置分数值
+     *
+     * @param creditValue 值
+     * @param AddAllValue 总值
+     */
+    public void setValues(int AddAllValue, int creditValue) {
+        if (mAddAllValue == AddAllValue && creditValue == mCurrentValue) {
+            return;
+        }
+        mMax = AddAllValue;
+        mAddAllValue = AddAllValue;
+
+        mCurrentValue = creditValue;
+        mAnimValue = creditValue;
+        postInvalidate();
+    }
+
+    /**
+     * 设置分数值并播放动画
+     *
+     * @param creditValue 值
+     * @param AddAllValue 总值
+     */
+    public void setValuesWithAnim(int AddAllValue, int creditValue) {
+        if (mAddAllValue == AddAllValue && creditValue == mCurrentValue) {
+            return;
+        }
+        mMax = AddAllValue;
+        mAddAllValue = AddAllValue;
+        mCurrentValue = creditValue;
+
+        ValueAnimator creditValueAnimator = ValueAnimator.ofInt(350, mCurrentValue);
+        creditValueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                mAnimValue = (int) animation.getAnimatedValue();
+                postInvalidate();
+            }
+        });
+
+        // 计算最终值对应的角度，以扫过的角度的线性变化来播放动画
+        float degree = calculateRelativeAngleWithValue(mCurrentValue);
+//        Log.d("angle",(mStartAngle + 3)+","+(mStartAngle + 3 + degree));
+        ValueAnimator degreeValueAnimator = ValueAnimator.ofFloat(mStartAngle + 3, mStartAngle + 3 + degree);
+        degreeValueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                mAngleWhenAnim = (float) animation.getAnimatedValue();
+            }
+        });
+
+        long delay = 1000;
+        AnimatorSet animatorSet = new AnimatorSet();
+        animatorSet
+                .setDuration(delay).playTogether(creditValueAnimator, degreeValueAnimator);
+//                .playTogether(creditValueAnimator, degreeValueAnimator, colorAnimator);
+        animatorSet.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                super.onAnimationStart(animation);
+                isAnimFinish = false;
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                isAnimFinish = true;
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+                super.onAnimationCancel(animation);
+                isAnimFinish = true;
+            }
+        });
+        animatorSet.start();
+    }
+
 
     /**
      * 设置标题字符串，中间数值字符串，下字符串
@@ -229,7 +479,7 @@ public class CustomDashBoardView extends View {
      * @param mbottomNumText
      */
     public void setMbottomNumText(String mbottomNumText) {
-        this.mbottomNumText = mbottomNumText;
+        this.mbottomText = mbottomNumText;
     }
 
     /**
@@ -268,9 +518,18 @@ public class CustomDashBoardView extends View {
         this.moutsideBackGroundColor = minsideBackGroundColor;
     }
 
-    public void setAlph(int malph){
+    public void setMoutsideForeGroundColor(int moutsideBackGroundColor){
+        this.moutsideForeGroundColor = moutsideBackGroundColor;
+    }
+
+    /**
+     * 设置透明度
+     * @param malph
+     */
+    public void setAlph(int malph) {
         this.malph = malph;
     }
+
     /**
      * 设置角度开口
      *
@@ -278,38 +537,6 @@ public class CustomDashBoardView extends View {
      */
     public void setmAngle(int angle) {
         mAngle = angle;
-    }
-
-    /**
-     * 设置双值 总值 中间值
-     *
-     * @param AddAllValue  总值
-     * @param CurrentValue 中间值
-     */
-    public void setValues(int AddAllValue, int CurrentValue) {
-        if (mAddAllValue == AddAllValue) {
-            return;
-        }
-        mMax = AddAllValue;
-        mAddAllValue = AddAllValue;
-        mCurrentValue = CurrentValue;
-        postInvalidate();
-    }
-
-    /**
-     * 设置双值 有动画
-     *
-     * @param AddAllValue  总值
-     * @param CurrentValue 中间值
-     */
-    public void setValuesWithAnim(int AddAllValue, int CurrentValue) {
-        if (mAddAllValue == AddAllValue) {
-            return;
-        }
-        mMax = AddAllValue;
-        mAddAllValue = AddAllValue;
-        mCurrentValue = CurrentValue;
-        postInvalidate();
     }
 
     /**
@@ -334,100 +561,6 @@ public class CustomDashBoardView extends View {
     private int sp2px(int sp) {
         return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, sp,
                 Resources.getSystem().getDisplayMetrics());
-    }
-
-    /**
-     * 计算旋转角度
-     * @param value
-     * @return
-     */
-//    private float calculateRelativeAngleWithValue(int value) {
-//        float degreePerSection = 1f * mSweepAngle / mSection;
-//        if (value > 700) {
-//            return 8 * degreePerSection + 2 * degreePerSection / 250 * (value - 700);
-//        } else if (value > 650) {
-//            return 6 * degreePerSection + 2 * degreePerSection / 50 * (value - 650);
-//        } else if (value > 600) {
-//            return 4 * degreePerSection + 2 * degreePerSection / 50 * (value - 600);
-//        } else if (value > 550) {
-//            return 2 * degreePerSection + 2 * degreePerSection / 50 * (value - 550);
-//        } else {
-//            return 2 * degreePerSection / 200 * (value - 350);
-//        }
-//    }
-
-    /**
-     * 工具方法
-     * 生成扫描/梯度渲染
-     */
-//    private SweepGradient generateSweepGradient() {
-//        SweepGradient sweepGradient = new SweepGradient(mCenterX, mCenterY,
-//                new int[]{Color.argb(0, 255, 255, 255), Color.argb(200, 255, 255, 255)},
-//                new float[]{0, calculateRelativeAngleWithValue(mCreditValue) / 360}
-//        );
-//        Matrix matrix = new Matrix();
-//        matrix.setRotate(mStartAngle - 1, mCenterX, mCenterY);
-//        sweepGradient.setLocalMatrix(matrix);
-//
-//        return sweepGradient;
-//    }
-
-
-    /**
-     * 工具方法
-     * 环形渲染
-     *
-     * @param x 坐标
-     * @param y 坐标
-     */
-    private RadialGradient generateRadialGradient(float x, float y) {
-        return new RadialGradient(x, y, mSparkleWidth / 2f,
-                new int[]{Color.argb(255, 255, 255, 255), Color.argb(80, 255, 255, 255)},
-                new float[]{0.4f, 1},
-                Shader.TileMode.CLAMP
-        );
-    }
-
-    /**
-     * 工具方法，算出占比的点
-     *
-     * @param radius 半径
-     * @param angle  角度
-     *
-     * @return 对应的点
-     */
-
-    private float[] getCoordinatePoint(float radius, float angle) {
-        float[] point = new float[2];
-
-        double arcAngle = Math.toRadians(angle); //将角度转换为弧度
-        if (angle < 90) {
-            point[0] = (float) (mCenterX + Math.cos(arcAngle) * radius);
-            point[1] = (float) (mCenterY + Math.sin(arcAngle) * radius);
-        } else if (angle == 90) {
-            point[0] = mCenterX;
-            point[1] = mCenterY + radius;
-        } else if (angle > 90 && angle < 180) {
-            arcAngle = Math.PI * (180 - angle) / 180.0;
-            point[0] = (float) (mCenterX - Math.cos(arcAngle) * radius);
-            point[1] = (float) (mCenterY + Math.sin(arcAngle) * radius);
-        } else if (angle == 180) {
-            point[0] = mCenterX - radius;
-            point[1] = mCenterY;
-        } else if (angle > 180 && angle < 270) {
-            arcAngle = Math.PI * (angle - 180) / 180.0;
-            point[0] = (float) (mCenterX - Math.cos(arcAngle) * radius);
-            point[1] = (float) (mCenterY - Math.sin(arcAngle) * radius);
-        } else if (angle == 270) {
-            point[0] = mCenterX;
-            point[1] = mCenterY - radius;
-        } else {
-            arcAngle = Math.PI * (360 - angle) / 180.0;
-            point[0] = (float) (mCenterX + Math.cos(arcAngle) * radius);
-            point[1] = (float) (mCenterY - Math.sin(arcAngle) * radius);
-        }
-
-        return point;
     }
 
 }
