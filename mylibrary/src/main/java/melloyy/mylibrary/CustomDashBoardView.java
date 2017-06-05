@@ -204,7 +204,7 @@ public class CustomDashBoardView extends View {
         canvas.drawColor(mBackgroundColor);
 
         //光滑处理
-        canvas.setDrawFilter( mSetfil );
+        canvas.setDrawFilter(mSetfil);
 
         /**
          *  初始化动画
@@ -334,7 +334,7 @@ public class CustomDashBoardView extends View {
         mPaint.setAlpha(160);
         mPaint.setColor(mbottomTextColor);
         mPaint.setTextSize(sp2px(mbottomTextSize));
-        canvas.drawText(mbottomText, mCenterX, mCenterY + dp2px(70), mPaint);
+        canvas.drawText(mbottomText, mCenterX, mCenterY * 2 - dp2px(5), mPaint);
     }
 
     /**
