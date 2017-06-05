@@ -76,8 +76,6 @@ public class CustomDashBoardView extends View {
     private int mSweepAngle = 240; // 绘制角度
     private int mSection = 10; // 值域（mMax-mMin）等分份数
     private int mPortion = 3; // 一个mSection等分份数
-    //    private int mCreditValue = 650; // 信用分
-//    private int mCurrentValue = mCreditValue; // 信用分(设定后不变)
     private float mLength1; // 刻度顶部相对边缘的长度
     private int mCalibrationWidth; // 刻度圆弧宽度
 
@@ -211,7 +209,6 @@ public class CustomDashBoardView extends View {
             /**
              * 画进度圆弧(起始到信用值)
              */
-//            Log.d("angle0",(mStartAngle + 3)+","+(mAngleWhenAnim - (mStartAngle + 2.99f)));
             canvas.drawArc(mRectFCalibrationFArc, mStartAngle + 3,
                     mAngleWhenAnim - (mStartAngle + 2.99f), false, mPaint);
         }
