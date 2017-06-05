@@ -26,9 +26,9 @@ public class CustomDashBoardView extends View {
     /**
      * 文本
      */
-    private String mtitleText = "test";     //中间数值上方
-    private String mtitleNumText = "test";  //中间数值
-    private String mbottomText = "test"; //下方数值整个字符串
+    private String mtitleText = "";     //中间数值上方
+    private String mtitleNumText = "";  //中间数值
+    private String mbottomText = ""; //下方数值整个字符串
     /**
      * 文本的颜色
      */
@@ -110,7 +110,7 @@ public class CustomDashBoardView extends View {
         int n = a.getIndexCount();
         for (int i = 0; i < n; i++) {
             int attr = a.getIndex(i);
-            if (attr == R.styleable.CustomDashBoardView_titleText) {
+            if (attr == R.styleable.CustomDashBoardView_titleText && !(null == a.getString(attr))) {
                 mtitleText = a.getString(attr);
             } else if (attr == R.styleable.CustomDashBoardView_titleTextColor) {
                 // 默认颜色设置为黑色
@@ -119,14 +119,14 @@ public class CustomDashBoardView extends View {
 // 默认设置为16sp，TypeValue也可以把sp转化为px
                 mtitleTextSize = a.getDimensionPixelSize(attr, (int) TypedValue.applyDimension(
                         TypedValue.COMPLEX_UNIT_SP, 16, getResources().getDisplayMetrics()));
-            } else if (attr == R.styleable.CustomDashBoardView_titleNumText) {
+            } else if (attr == R.styleable.CustomDashBoardView_titleNumText && !(null == a.getString(attr))) {
                 mtitleNumText = a.getString(attr);
             } else if (attr == R.styleable.CustomDashBoardView_titleNumTextColor) {
                 mtitleNumTextColor = a.getColor(attr, Color.WHITE);
             } else if (attr == R.styleable.CustomDashBoardView_titleNumTextSize) {
                 mtitleNumTextSize = a.getDimensionPixelSize(attr, (int) TypedValue.applyDimension(
                         TypedValue.COMPLEX_UNIT_SP, 16, getResources().getDisplayMetrics()));
-            } else if (attr == R.styleable.CustomDashBoardView_bottomNumText) {
+            } else if (attr == R.styleable.CustomDashBoardView_bottomNumText && !(null == a.getString(attr))) {
                 mbottomText = a.getString(attr);
             } else if (attr == R.styleable.CustomDashBoardView_bottomTextColor) {
                 mbottomTextColor = a.getColor(attr, Color.WHITE);
