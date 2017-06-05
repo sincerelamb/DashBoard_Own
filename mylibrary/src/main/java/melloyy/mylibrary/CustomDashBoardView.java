@@ -180,7 +180,7 @@ public class CustomDashBoardView extends View {
 
         mLength1 = mPadding + dp2px(10) / 2f + dp2px(8);                //刻度圆弧外一圈
 
-        int width = resolveSize(dp2px(220), widthMeasureSpec);
+        int width = resolveSize(dp2px(200), widthMeasureSpec);
 
         //设置长宽
         setMeasuredDimension(width, width + dp2px(30));
@@ -303,7 +303,7 @@ public class CustomDashBoardView extends View {
          */
         mPaint.setColor(minsideBackGroundColor);                    //设置画笔颜色
         mPaint.setStrokeWidth((float) 3.0);              //线宽
-        mPaint.setStyle(Paint.Style.FILL);                   
+        mPaint.setStyle(Paint.Style.FILL);
         //半径为centerY-长线Y
         canvas.drawCircle(mCenterX, mCenterY, mCenterY - (mPadding + mLength1 + mCalibrationWidth - dp2px(1)), mPaint);           //绘制圆形
 
