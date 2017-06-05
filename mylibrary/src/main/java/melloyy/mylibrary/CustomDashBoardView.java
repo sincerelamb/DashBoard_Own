@@ -26,9 +26,9 @@ public class CustomDashBoardView extends View {
     /**
      * 文本
      */
-    private String mtitleText = " ";     //中间数值上方
-    private String mtitleNumText = " ";  //中间数值
-    private String mbottomText = " "; //下方数值整个字符串
+    private String mtitleText = "test";     //中间数值上方
+    private String mtitleNumText = "test";  //中间数值
+    private String mbottomText = "test"; //下方数值整个字符串
     /**
      * 文本的颜色
      */
