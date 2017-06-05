@@ -307,7 +307,7 @@ public class CustomDashBoardView extends View {
         mPaint.setColor(mtitleNumTextColor);
         mPaint.setStyle(Paint.Style.FILL);  //内部填满
         mPaint.setAlpha(255);
-        mPaint.setTextSize(mtitleNumTextSize);
+        mPaint.setTextSize(sp2px(mtitleNumTextSize));
         mPaint.setTextAlign(Paint.Align.CENTER);
         mtitleNumText = String.valueOf(mCurrentValue);
         canvas.drawText(mtitleNumText, mCenterX, mCenterY + dp2px(20), mPaint);
@@ -325,7 +325,7 @@ public class CustomDashBoardView extends View {
          */
         mPaint.setAlpha(160);
         mPaint.setColor(mbottomTextColor);
-        mPaint.setTextSize(mbottomTextSize);
+        mPaint.setTextSize(sp2px(mbottomTextSize));
         canvas.drawText(mbottomText, mCenterX, mCenterY + dp2px(70), mPaint);
     }
 
