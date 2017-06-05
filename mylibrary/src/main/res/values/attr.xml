@@ -16,6 +16,9 @@
 
         <attr name="insideBackGroundColor" format="color" />
         <attr name="cycleBackGroundColor" format="color" />
+        <attr name="outsideForeGroundColor" format="color"/>
+
+        <attr name="backgroundColor" format="color"/>
 
     </declare-styleable>
 

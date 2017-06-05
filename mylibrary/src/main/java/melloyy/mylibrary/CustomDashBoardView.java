@@ -52,6 +52,7 @@ public class CustomDashBoardView extends View {
     private int moutsideForeGroundColor;
     /**
      * 透明度
+     * (暂无)
      */
     private int malph;
     /**
@@ -67,7 +68,7 @@ public class CustomDashBoardView extends View {
      * 角度可以设置
      */
     private int mAngle = 60;
-
+//以上均可使用set方法
 
     /**
      * 标识↓
@@ -135,7 +136,11 @@ public class CustomDashBoardView extends View {
             } else if (attr == R.styleable.CustomDashBoardView_insideBackGroundColor) {
                 minsideBackGroundColor = a.getColor(attr, Color.BLACK);
             } else if (attr == R.styleable.CustomDashBoardView_cycleBackGroundColor) {
-                moutsideBackGroundColor = a.getColor(attr, Color.WHITE);
+                moutsideBackGroundColor = a.getColor(attr, Color.YELLOW);
+            } else if (attr == R.styleable.CustomDashBoardView_outsideForeGroundColor) {
+                moutsideForeGroundColor = a.getColor(attr, Color.BLUE);
+            } else if (attr == R.styleable.CustomDashBoardView_backgroundColor) {
+                mBackgroundColor = a.getColor(attr, Color.BLACK);
             }
         }
         a.recycle();
@@ -188,6 +193,8 @@ public class CustomDashBoardView extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
+        mStartAngle = 90 + (mAngle / 2);
+        mSweepAngle = 360 - mAngle;
         canvas.drawColor(mBackgroundColor);
 
         /**
@@ -498,6 +505,14 @@ public class CustomDashBoardView extends View {
     }
 
     /**
+     * 设置背景色
+     */
+    public void setMBackgroundColor(int mBackgroundColor) {
+        this.mBackgroundColor = mBackgroundColor;
+    }
+
+
+    /**
      * 设置中间背景色
      *
      * @param minsideBackGroundColor
@@ -515,12 +530,13 @@ public class CustomDashBoardView extends View {
         this.moutsideBackGroundColor = minsideBackGroundColor;
     }
 
-    public void setMoutsideForeGroundColor(int moutsideBackGroundColor){
+    public void setMoutsideForeGroundColor(int moutsideBackGroundColor) {
         this.moutsideForeGroundColor = moutsideBackGroundColor;
     }
 
     /**
      * 设置透明度
+     *
      * @param malph
      */
     public void setAlph(int malph) {
