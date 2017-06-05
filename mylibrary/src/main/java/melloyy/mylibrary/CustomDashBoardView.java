@@ -10,6 +10,7 @@ import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.PaintFlagsDrawFilter;
 import android.graphics.RectF;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
@@ -75,8 +76,8 @@ public class CustomDashBoardView extends View {
      */
     private int mStartAngle = 150; // 起始角度
     private int mSweepAngle = 240; // 绘制角度
-    private int mSection = 10; // 值域（mMax-mMin）等分份数
-    private int mPortion = 3; // 一个mSection等分份数
+    private int mSection = 30; // 值域（mMax-mMin）等分份数
+    private int mPortion = 2; // 一个mSection等分份数
     private float mLength1; // 刻度顶部相对边缘的长度
     private int mCalibrationWidth; // 刻度圆弧宽度
 
@@ -91,7 +92,10 @@ public class CustomDashBoardView extends View {
      */
     private boolean isAnimFinish = true;
     private float mAngleWhenAnim;
-
+    /**
+     * 光滑处理
+     */
+    private PaintFlagsDrawFilter mSetfil;
 
     public CustomDashBoardView(Context context) {
         this(context, null);
@@ -103,6 +107,8 @@ public class CustomDashBoardView extends View {
 
     public CustomDashBoardView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        //光滑处理
+        mSetfil = new PaintFlagsDrawFilter(0, Paint.FILTER_BITMAP_FLAG);
         //获得我们所定义的自定义样式属性
         //3个文本的内容颜色大小
         //中间背景色的设定
@@ -196,6 +202,9 @@ public class CustomDashBoardView extends View {
         mStartAngle = 90 + (mAngle / 2);
         mSweepAngle = 360 - mAngle;
         canvas.drawColor(mBackgroundColor);
+
+        //光滑处理
+        canvas.setDrawFilter( mSetfil );
 
         /**
          *  初始化动画
@@ -292,10 +301,9 @@ public class CustomDashBoardView extends View {
         /**
          * 画背景
          */
-        mPaint.setAntiAlias(false);                       //设置画笔为无锯齿
         mPaint.setColor(minsideBackGroundColor);                    //设置画笔颜色
         mPaint.setStrokeWidth((float) 3.0);              //线宽
-        mPaint.setStyle(Paint.Style.FILL);                   //空心效果
+        mPaint.setStyle(Paint.Style.FILL);                   
         //半径为centerY-长线Y
         canvas.drawCircle(mCenterX, mCenterY, mCenterY - (mPadding + mLength1 + mCalibrationWidth - dp2px(1)), mPaint);           //绘制圆形
 
