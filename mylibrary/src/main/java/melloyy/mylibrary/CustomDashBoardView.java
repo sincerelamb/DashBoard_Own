@@ -334,7 +334,7 @@ public class CustomDashBoardView extends View {
         mPaint.setAlpha(160);
         mPaint.setColor(mbottomTextColor);
         mPaint.setTextSize(sp2px(mbottomTextSize));
-        canvas.drawText(mbottomText, mCenterX, mCenterY * 2 - dp2px(5), mPaint);
+        canvas.drawText(mbottomText, mCenterX, mCenterY * 2, mPaint);
     }
 
     /**
